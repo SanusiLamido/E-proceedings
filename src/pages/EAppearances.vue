@@ -2,65 +2,32 @@
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
       <q-page class="q-pa-md">
-        <div class="row q-col-gutter-md">
-          <!-- Proceedings List -->
-          <div class="col-12 col-md-8">
-            <q-card class="proceedings-card">
-              <q-card-section>
-                <h2 class="q-mb-md">Appearance</h2>
-                <q-input
-                  filled
-                  v-model="searchQuery"
-                  label="Search proceedings..."
-                  class="q-mb-md"
-                  dense
-                />
+        <!-- Toolbar -->
 
-                <q-list bordered separator class="scrollable-list">
-                  <!-- Static Proceedings for Testing -->
-                  <q-item
-                    v-for="proceeding in staticProceedings"
-                    :key="proceeding.id"
-                    clickable
-                    @click="openProceeding"
-                    class="proceeding-item"
-                  >
-                    <q-item-section>
-                      <q-item-label
-                        ><strong>Case Number:</strong> {{ proceeding.row_number }}</q-item-label
-                      >
-                      <q-item-label><strong>Name:</strong> {{ proceeding.name }}</q-item-label>
-                      <q-item-label caption class="text-grey-7">{{
-                        proceeding.status
-                      }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-list>
+        <div class="row q-col-gutter-md">
+          <!-- Appearances Table -->
+          <div class="col-12 col-md-8">
+            <q-card>
+              <q-card-section>
+                <div class="text-h5">All Appearances</div>
               </q-card-section>
+              <q-table flat bordered :rows="appearances" :columns="columns" row-key="id">
+                <template v-slot:body-cell-signature="props">
+                  <q-td :props="props">
+                    <q-icon name="edit" class="cursor-pointer" />
+                  </q-td>
+                </template>
+              </q-table>
             </q-card>
           </div>
 
-          <!-- Case Statistics -->
+          <!-- Calendar -->
           <div class="col-12 col-md-4">
-            <q-card class="stats-card">
-              <q-card-section class="text-center">
-                <h4 class="text-red">{{ remainingCases }}</h4>
-                <p class="text-grey-8">Remaining Proceedings</p>
+            <q-card>
+              <q-card-section>
+                <div class="text-h6">Appearances Calendar</div>
               </q-card-section>
-            </q-card>
-
-            <q-card class="stats-card">
-              <q-card-section class="text-center">
-                <h4 class="text-green">{{ attendedCases }}</h4>
-                <p class="text-grey-8">Taken</p>
-              </q-card-section>
-            </q-card>
-
-            <q-card class="stats-card">
-              <q-card-section class="text-center">
-                <h4 class="text-blue">{{ allCases }}</h4>
-                <p class="text-grey-8">All</p>
-              </q-card-section>
+              <q-date v-model="selectedDate" minimal today-btn />
             </q-card>
           </div>
         </div>
