@@ -2,21 +2,64 @@
   <q-page class="q-pa-md">
     <q-layout>
       <!-- Header -->
-      <q-header>
-      </q-header>
+      <q-header> </q-header>
 
       <!-- Page Content -->
       <q-page-container>
         <q-page class="q-pa-md">
           <div class="row q-col-gutter-lg justify-center">
             <!-- Today's Proceedings Widget -->
-            <q-card class="col-12 col-sm-6 col-md-4 widget-card" clickable @click="$router.push('/proceedings')">
+            <q-card
+              class="col-12 col-sm-6 col-md-4 widget-card"
+              clickable
+              @click="$router.push('/proceedings')"
+            >
               <q-card-section class="widget-content">
                 <q-icon name="gavel" class="widget-icon" />
                 <q-item>
                   <q-item-section>
                     <q-item-label class="text-h6 text-center">Today's Proceedings</q-item-label>
-                    <q-item-label caption class="text-grey-7 text-center">View and manage today's court proceedings.</q-item-label>
+                    <q-item-label caption class="text-grey-7 text-center"
+                      >View and manage today's court proceedings.</q-item-label
+                    >
+                  </q-item-section>
+                </q-item>
+              </q-card-section>
+            </q-card>
+
+            <!-- E Appearances Widget -->
+            <q-card
+              class="col-12 col-sm-6 col-md-4 widget-card"
+              clickable
+              @click="$router.push('/appearances')"
+            >
+              <q-card-section class="widget-content">
+                <q-icon name="person" class="widget-icon" />
+                <q-item>
+                  <q-item-section>
+                    <q-item-label class="text-h6 text-center">Appearance</q-item-label>
+                    <q-item-label caption class="text-grey-7 text-center"
+                      >View and manage online appearances.</q-item-label
+                    >
+                  </q-item-section>
+                </q-item>
+              </q-card-section>
+            </q-card>
+
+            <!-- My Proceedings Widget -->
+            <q-card
+              class="col-12 col-sm-6 col-md-4 widget-card"
+              clickable
+              @click="$router.push('/my-proceedings-page')"
+            >
+              <q-card-section class="widget-content">
+                <q-icon name="article" class="widget-icon" />
+                <q-item>
+                  <q-item-section>
+                    <q-item-label class="text-h6 text-center">My Proceedings</q-item-label>
+                    <q-item-label caption class="text-grey-7 text-center"
+                      >View and manage my proceedings.</q-item-label
+                    >
                   </q-item-section>
                 </q-item>
               </q-card-section>
@@ -27,7 +70,9 @@
               <q-card-section class="widget-content">
                 <q-icon name="widgets" class="widget-icon" />
                 <div class="text-h6 text-center text-weight-medium">Widget {{ n }}</div>
-                <div class="text-subtitle2 text-grey-7 text-center">Description for Widget {{ n }}</div>
+                <div class="text-subtitle2 text-grey-7 text-center">
+                  Description for Widget {{ n }}
+                </div>
               </q-card-section>
             </q-card>
           </div>
@@ -37,8 +82,7 @@
   </q-page>
 </template>
 
-<script setup>
-</script>
+<script setup></script>
 
 <style scoped>
 /* Page background */
@@ -50,7 +94,9 @@
 .widget-card {
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   background-color: white;
   min-height: 200px;
   display: flex;
