@@ -1,1 +1,34 @@
 // app global css in SCSS form
+// app global css in SCSS form
+.text-h4 {
+  font-weight: 500;
+  color: #333;
+}
+
+.text-h5 {
+  font-weight: 500;
+  color: #444;
+}
+
+.text-h6 {
+  font-weight: 500;
+  color: #555;
+}
+
+.q-table {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.q-table th {
+  font-weight: 600;
+}
+
+.q-date__calendar-item--selected {
+  background: #1976d2 !important;
+  color: white !important;
+}
+
+.q-date__calendar-item--today {
+  background: rgba(25, 118, 210, 0.1);
+}

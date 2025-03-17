@@ -1,118 +1,216 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page class="q-pa-md">
-        <!-- Toolbar -->
+  <q-page class="q-pa-md bg-grey-2">
+    <div class="row q-col-gutter-md">
+      <!-- Appearances Table -->
+      <div class="col-md-8 col-xs-12">
+        <q-card class="q-pa-md full-height">
+          <q-card-section>
+            <div class="text-h6">All Appearances</div>
+          </q-card-section>
 
-        <div class="row q-col-gutter-md">
-          <!-- Appearances Table -->
-          <div class="col-12 col-md-8">
-            <q-card>
-              <q-card-section>
-                <div class="text-h5">All Appearances</div>
-              </q-card-section>
-              <q-table flat bordered :rows="appearances" :columns="columns" row-key="id">
-                <template v-slot:body-cell-signature="props">
-                  <q-td :props="props">
-                    <q-icon name="edit" class="cursor-pointer" />
-                  </q-td>
-                </template>
-              </q-table>
-            </q-card>
-          </div>
+          <q-table
+            flat
+            bordered
+            dense
+            wrap-cells
+            :rows="appearances"
+            :columns="columns"
+            row-key="id"
+          >
+            <template v-slot:body-cell-signature="props">
+              <q-td :props="props">
+                <q-img
+                  v-if="props.row.signature"
+                  :src="props.row.signature"
+                  width="50px"
+                  height="50px"
+                  fit="contain"
+                />
+                <span v-else>No Signature</span>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card>
+      </div>
 
-          <!-- Calendar -->
-          <div class="col-12 col-md-4">
-            <q-card>
-              <q-card-section>
-                <div class="text-h6">Appearances Calendar</div>
-              </q-card-section>
-              <q-date v-model="selectedDate" minimal today-btn />
-            </q-card>
-          </div>
-        </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+      <!-- Appearances Calendar -->
+      <div class="col-md-4 col-xs-12">
+        <q-card class="q-pa-md full-height">
+          <q-card-section>
+            <div class="text-h6">Appearances Calendar</div>
+          </q-card-section>
+
+          <q-date
+            v-model="selectedDate"
+            :events="eventDates"
+            mask="YYYY-MM-DD"
+            color="primary"
+            minimal
+            class="full-width"
+            :event-color="getEventColor"
+            @update:model-value="openModal"
+          />
+        </q-card>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <q-dialog v-model="isModalOpen" persistent>
+      <q-card class="q-pa-md" style="width: 600px; max-width: 90vw">
+        <q-card-section>
+          <div class="text-h6">Appearances on {{ selectedDate }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-table
+            dense
+            bordered
+            flat
+            wrap-cells
+            :rows="modalAppearances"
+            :columns="columns"
+            row-key="id"
+          >
+            <template v-slot:body-cell-signature="props">
+              <q-td :props="props">
+                <q-img
+                  v-if="props.row.signature"
+                  :src="props.row.signature"
+                  width="50px"
+                  height="50px"
+                  fit="contain"
+                />
+                <span v-else>No Signature</span>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn label="Print" color="primary" @click="printModal" />
+          <q-btn label="Close" color="negative" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+<script>
+import { defineComponent, ref, onMounted } from 'vue'
+import { useQuasar } from 'quasar'
 
-const router = useRouter()
-const searchQuery = ref('')
+export default defineComponent({
+  setup() {
+    const $q = useQuasar()
+    const selectedDate = ref(new Date().toISOString().split('T')[0])
+    const appearances = ref([])
+    const modalAppearances = ref([])
+    const eventDates = ref([])
+    const appearanceCounts = ref({})
+    const isModalOpen = ref(false)
 
-// Static proceedings for testing
-const staticProceedings = ref([
-  { id: 1, row_number: '2024/001', name: 'State vs John Doe', status: 'Pending' },
-  { id: 2, row_number: '2024/002', name: 'State vs Jane Smith', status: 'Ongoing' },
-  { id: 3, row_number: '2024/003', name: 'State vs Michael Johnson', status: 'Closed' },
-])
+    const columns = [
+      { name: 'fullName', label: 'Full Name', field: 'fullName', align: 'left' },
+      { name: 'phone', label: 'Phone Number', field: 'phone', align: 'left' },
+      { name: 'appearingFor', label: 'Appearing for', field: 'appearingFor', align: 'left' },
+      { name: 'dateTime', label: 'Date', field: 'dateTime', align: 'center' },
+      { name: 'signature', label: 'Signature', field: 'signature', align: 'center' },
+    ]
 
-const remainingCases = ref(2)
-const attendedCases = ref(1)
-const allCases = ref(staticProceedings.value.length)
+    const fetchAppearances = async () => {
+      try {
+        $q.loading.show({ message: 'Loading Appearances...' })
 
-const openProceeding = () => {
-  router.push('/startproceedings')
-}
+        const [appearancesRes, countsRes] = await Promise.all([
+          fetch('https://api.xjudiciary.com/api/viewlastapperance'),
+          fetch('https://api.xjudiciary.com/api/count-appearances'),
+        ])
 
-onMounted(() => {
-  // Simulating data fetch
+        if (!appearancesRes.ok || !countsRes.ok) throw new Error('Failed to fetch data')
+
+        const [appearancesData, countsData] = await Promise.all([
+          appearancesRes.json(),
+          countsRes.json(),
+        ])
+
+        appearances.value = appearancesData.map((item) => ({
+          id: item.id,
+          fullName: item.full_name,
+          phone: item.phone_number,
+          appearingFor: `${item.number} ${item.docket_name}`,
+          dateTime: item.formatted_date,
+          signature: item.signature,
+        }))
+
+        eventDates.value = countsData.map((item) => item.date_format.replace(/-/g, '/'))
+        appearanceCounts.value = countsData.reduce((acc, item) => {
+          acc[item.date_format.replace(/-/g, '/')] = item.count
+          return acc
+        }, {})
+      } catch (error) {
+        $q.notify({ type: 'negative', message: 'Error fetching data' })
+        console.error(error)
+      } finally {
+        $q.loading.hide()
+      }
+    }
+
+    const openModal = async (date) => {
+      selectedDate.value = date
+      isModalOpen.value = true
+      try {
+        $q.loading.show({ message: 'Loading Appearances...' })
+        const res = await fetch(`https://api.xjudiciary.com/api/viewappearance/${date}`)
+        if (!res.ok) throw new Error('Failed to fetch data')
+        const modalAppearancesData = await res.json()
+        modalAppearances.value = modalAppearancesData.map((item) => ({
+          id: item.id,
+          fullName: item.full_name,
+          phone: item.phone_number,
+          appearingFor: `${item.number} ${item.docket_name}`,
+          dateTime: item.formatted_date,
+          signature: item.signature,
+        }))
+      } catch (error) {
+        $q.notify({ type: 'negative', message: 'Error fetching data' })
+        console.error(error)
+      } finally {
+        $q.loading.hide()
+      }
+    }
+
+    const getEventColor = (date) => {
+      const count = appearanceCounts.value[date] || 0
+      if (count >= 20) return 'red'
+      if (count >= 10) return 'orange'
+      if (count >= 5) return 'yellow'
+      return 'blue'
+    }
+
+    const printModal = () => {
+      window.print()
+    }
+
+    onMounted(fetchAppearances)
+
+    return {
+      selectedDate,
+      appearances,
+      modalAppearances,
+      eventDates,
+      appearanceCounts,
+      isModalOpen,
+      columns,
+      getEventColor,
+      openModal,
+      printModal,
+    }
+  },
 })
 </script>
 
-<style scoped>
-/* Page background */
-.q-page {
-  background-color: #f8f9fa;
-}
-
-/* Proceedings Card */
-.proceedings-card {
+<style>
+.q-card {
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  background-color: white;
-  min-height: 500px;
-  padding: 20px;
-}
-
-/* Scrollable List */
-.scrollable-list {
-  max-height: 450px;
-  overflow-y: auto;
-  border-radius: 8px;
-}
-
-/* Proceeding Item */
-.proceeding-item {
-  transition: background-color 0.2s ease-in-out;
-}
-
-.proceeding-item:hover {
-  background-color: #f0f0f0;
-}
-
-/* Case Stats */
-.stats-card {
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  background-color: white;
-  margin-bottom: 20px;
-  padding: 20px;
-  text-align: center;
-}
-
-/* Number Styling */
-h4 {
-  font-size: 2rem;
-  margin-bottom: 4px;
-}
-
-/* Text styles */
-p {
-  font-size: 1rem;
-  font-weight: 500;
 }
 </style>
