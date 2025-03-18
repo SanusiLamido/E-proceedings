@@ -75,14 +75,49 @@
                 </div>
               </q-card-section>
             </q-card>
+
+            <div class="col-12 col-sm-6 col-md-4">
+              <q-card class="my-card" @click="$router.push('/ea')">
+                <q-card-section>
+                  <div class="text-h6">Court Appearances</div>
+                  <div class="text-subtitle2">Register your court appearances</div>
+                </q-card-section>
+                <q-card-section class="q-pt-none">
+                  <q-icon name="gavel" size="2em" color="primary" />
+                </q-card-section>
+              </q-card>
+            </div>
           </div>
         </q-page>
       </q-page-container>
     </q-layout>
+
+    <!-- Floating Action Button for Messages -->
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-btn
+        color="white"
+        icon="message"
+        @click="isMessagesModalOpen = true"
+        round
+        flat
+        style="background-color: black"
+      >
+        <q-badge color="red" floating>{{ unreadMessagesCount }}</q-badge>
+      </q-btn>
+    </q-page-sticky>
+
+    <!-- Messages Modal -->
+    <MessagesModal :isOpen="isMessagesModalOpen" @update:isOpen="isMessagesModalOpen = $event" />
   </q-page>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+import MessagesModal from 'components/MessagesModal.vue'
+
+const isMessagesModalOpen = ref(false)
+const unreadMessagesCount = ref(3) // Example count, replace with actual logic
+</script>
 
 <style scoped>
 /* Page background */
